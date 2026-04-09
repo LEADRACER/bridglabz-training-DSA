@@ -1,16 +1,19 @@
 import java.util.Stack;
+import java.util.Scanner;
 
 /**
- * A Queue implementation using two Stacks.
- * 
- * Performance:
- * - Enqueue: O(1)
- * - Dequeue: Amortized O(1), Worst-case O(n)
- * - Peek: Amortized O(1), Worst-case O(n)
- * - Empty: O(1)
+ * Problem: Implement a Queue using two Stacks.
+ *
+ * Student Level Explanation:
+ * A Queue follows FIFO (First In First Out), while a Stack follows LIFO (Last In First Out).
+ * To make a Queue using Stacks, we use one stack for adding items and another for removing them.
+ * When we want to remove an item, we move everything from the first stack to the second stack,
+ * which reverses the order and makes it behave like a Queue!
  */
 public class code1<T> {
+    // Stack to handle adding new elements (Enqueuing)
     private Stack<T> stackEnqueue;
+    // Stack to handle removing elements (Dequeuing)
     private Stack<T> stackDequeue;
 
     public code1() {
@@ -19,77 +22,79 @@ public class code1<T> {
     }
 
     /**
-     * Pushes element x to the back of the queue.
+     * Step 1: Add an element to the back of the queue.
+     * Logic: Simply push the element into the enqueue stack.
      */
-    public void enqueue(T x) {
-        stackEnqueue.push(x);
+    public void enqueue(T item) {
+        stackEnqueue.push(item);
     }
 
     /**
-     * Removes the element from the front of the queue and returns it.
+     * Step 2: Remove the front element from the queue.
+     * Logic: If the dequeue stack is empty, transfer everything from the enqueue stack.
      */
     public T dequeue() {
-        prepareDequeueStack();
+        // Prepare the dequeue stack if it's empty
+        fillDequeueStack();
+        
         if (stackDequeue.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+            System.out.println("Error: The queue is empty!");
+            return null;
         }
         return stackDequeue.pop();
     }
 
     /**
-     * Get the front element.
+     * Step 3: Peek at the front element without removing it.
      */
     public T peek() {
-        prepareDequeueStack();
+        fillDequeueStack();
         if (stackDequeue.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+            System.out.println("Error: The queue is empty!");
+            return null;
         }
         return stackDequeue.peek();
     }
 
     /**
-     * Returns whether the queue is empty.
+     * Helper Method: Moves elements from enqueue stack to dequeue stack.
+     * This is only done when the dequeue stack is empty.
      */
-    public boolean isEmpty() {
-        return stackEnqueue.isEmpty() && stackDequeue.isEmpty();
-    }
-
-    /**
-     * Returns the number of elements in the queue.
-     */
-    public int size() {
-        return stackEnqueue.size() + stackDequeue.size();
-    }
-
-    /**
-     * Internal helper to shift elements from enqueue stack to dequeue stack when needed.
-     */
-    private void prepareDequeueStack() {
+    private void fillDequeueStack() {
         if (stackDequeue.isEmpty()) {
             while (!stackEnqueue.isEmpty()) {
+                // Pop from one and push to the other to reverse the order
                 stackDequeue.push(stackEnqueue.pop());
             }
         }
     }
 
+    public boolean isEmpty() {
+        return stackEnqueue.isEmpty() && stackDequeue.isEmpty();
+    }
+
     public static void main(String[] args) {
-        code1<Integer> queue = new code1<>();
+        Scanner scanner = new Scanner(System.in);
+        code1<Integer> myQueue = new code1<>();
 
-        System.out.println("Enqueuing: 1, 2, 3");
-        queue.enqueue(1);
-        queue.enqueue(2);
-        queue.enqueue(3);
+        System.out.println("--- Queue Using Stacks Demo ---");
+        System.out.println("How many numbers do you want to add to the queue?");
+        int count = scanner.nextInt();
 
-        System.out.println("Peek: " + queue.peek()); // Should be 1
-        System.out.println("Dequeue: " + queue.dequeue()); // Should be 1
-        System.out.println("Dequeue: " + queue.dequeue()); // Should be 2
+        for (int i = 1; i <= count; i++) {
+            System.out.print("Enter number " + i + ": ");
+            int value = scanner.nextInt();
+            myQueue.enqueue(value);
+        }
 
-        System.out.println("Enqueuing: 4");
-        queue.enqueue(4);
+        System.out.println("\nOperations on the Queue:");
+        if (!myQueue.isEmpty()) {
+            System.out.println("Front element (Peek): " + myQueue.peek());
+            System.out.println("Removing (Dequeue) element: " + myQueue.dequeue());
+            System.out.println("Next front element: " + myQueue.peek());
+        }
 
-        System.out.println("Dequeue: " + queue.dequeue()); // Should be 3
-        System.out.println("Dequeue: " + queue.dequeue()); // Should be 4
-        
-        System.out.println("Is empty? " + queue.isEmpty()); // Should be true
+        System.out.println("\nFinal Queue Status: " + (myQueue.isEmpty() ? "Empty" : "Not Empty"));
+        scanner.close();
     }
 }

@@ -1,86 +1,77 @@
 import java.util.Stack;
+import java.util.Scanner;
 
 /**
- * Sorting a Stack using Recursion.
- * 
- * Logic:
- * 1. Recursive Sort: Pop top, sort remaining, insert back.
- * 2. Sorted Insert: Find correct spot for the element in a sorted stack.
- * 
- * Complexity:
- * - Time: O(n^2)
- * - Space: O(n) for recursion stack
+ * Problem: Sort an existing Stack using Recursion.
+ *
+ * Student Level Explanation:
+ * We use two recursive functions:
+ * 1. sortStack: This function empties the stack by popping elements one by one.
+ * 2. sortedInsert: Once the stack is empty, we start putting elements back. 
+ *    But instead of just pushing them, we find the correct sorted position for each.
  */
 public class code2 {
 
     /**
-     * Function to sort the stack recursively.
+     * Recursive Function 1: Sorts the stack.
      */
     public static void sortStack(Stack<Integer> stack) {
-        // Base case: if stack is empty
+        // Base Case: If stack is empty, we are done popping
         if (stack.isEmpty()) {
             return;
         }
 
-        // Remove the top element
-        int top = stack.pop();
+        // 1. Remove the top element
+        int currentElement = stack.pop();
 
-        // Sort the remaining stack
+        // 2. Recursively sort the remaining elements
         sortStack(stack);
 
-        // Push the removed element back in sorted order
-        sortedInsert(stack, top);
+        // 3. Put the removed element back into the now-sorted stack
+        sortedInsert(stack, currentElement);
     }
 
     /**
-     * Helper function to insert an element in its sorted position.
+     * Recursive Function 2: Inserts an element back in the correct position.
      */
-    private static void sortedInsert(Stack<Integer> stack, int element) {
-        // Base case: stack is empty or element is greater than top (ascending order)
-        // If we want descending, change condition to element < stack.peek()
-        if (stack.isEmpty() || element >= stack.peek()) {
-            stack.push(element);
+    public static void sortedInsert(Stack<Integer> stack, int newElement) {
+        // Base Case: If stack is empty OR the element is larger than the top, just push it
+        // (This maintains the sorted order from bottom to top)
+        if (stack.isEmpty() || newElement >= stack.peek()) {
+            stack.push(newElement);
             return;
         }
 
-        // If top is greater, remove it and recurse
-        int temp = stack.pop();
-        sortedInsert(stack, element);
+        // If the top element is larger than 'newElement', we must set it aside temporarily
+        int tempTop = stack.pop();
+        
+        // Try inserting 'newElement' again in the remaining stack
+        sortedInsert(stack, newElement);
 
-        // Push back the popped element
-        stack.push(temp);
+        // Put the temporarily removed element back on top
+        stack.push(tempTop);
     }
 
     public static void main(String[] args) {
-        Stack<Integer> stack = new Stack<>();
-        stack.push(30);
-        stack.push(-5);
-        stack.push(18);
-        stack.push(14);
-        stack.push(-3);
+        Scanner scanner = new Scanner(System.in);
+        Stack<Integer> studentStack = new Stack<>();
 
-        System.out.println("Original Stack: " + stack);
+        System.out.println("--- Recursion: Sort a Stack ---");
+        System.out.print("Enter how many numbers you want to put in the stack: ");
+        int totalNumbers = scanner.nextInt();
 
-        sortStack(stack);
-
-        System.out.println("Sorted Stack (Ascending): " + stack);
-        
-        // Final verification check
-        boolean isSorted = true;
-        int prev = Integer.MIN_VALUE;
-        Stack<Integer> copy = (Stack<Integer>) stack.clone();
-        while(!copy.isEmpty()){
-            int current = copy.pop();
-            if(current < prev) {
-                // Since it's a stack, top should be largest if it's ascending from bottom to top
-                // Wait, ascending order in stack usually means bottom is smallest, top is largest.
-                // Let's re-verify:
-                // If bottom is 1, and we push 2, then pushes 3. Stack [1, 2, 3] <- top
-                // My logic: element >= stack.peek() -> push.
-                // If stack is [1, 2], and we insert 3: 3 >= 2 -> stick it on top. [1, 2, 3]
-                // If stack is [1, 3], and we insert 2: 2 < 3 -> pop 3, insert 2 -> [1, 2], push 3 -> [1, 2, 3]
-                // Correct. Top is largest.
-            }
+        for (int i = 1; i <= totalNumbers; i++) {
+            System.out.print("Enter number " + i + ": ");
+            studentStack.push(scanner.nextInt());
         }
+
+        System.out.println("\nOriginal Stack (Bottom to Top): " + studentStack);
+
+        // Start the sorting process
+        sortStack(studentStack);
+
+        System.out.println("Sorted Stack   (Bottom to Top): " + studentStack);
+        
+        scanner.close();
     }
 }

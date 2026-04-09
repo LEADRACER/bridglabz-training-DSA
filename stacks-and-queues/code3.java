@@ -1,70 +1,80 @@
-import java.util.Arrays;
 import java.util.Stack;
+import java.util.Scanner;
+import java.util.Arrays;
 
 /**
- * Stock Span Problem.
+ * Problem: Stock Span Problem.
+ *
+ * Student Level Explanation:
+ * The 'span' of a stock price on a specific day is how many days back (including today)
+ * the price has been less than or equal to today's price.
  * 
- * Problem: Calculate the span of stock prices for each day.
- * The span is the number of consecutive days before (including current) 
- * where the price was less than or equal to the current price.
- * 
- * Logic:
- * - Use a stack to store indices of the stock prices.
- * - The stack stores indices in a "monotonic decreasing" fashion of their prices.
- * 
- * Time Complexity: O(n) - Each element is pushed and popped at most once.
- * Space Complexity: O(n) for the stack.
+ * Instead of comparing every day with every previous day (O(n^2)), 
+ * we use a Stack of 'indices' to find the nearest previous day that had a higher price.
  */
 public class code3 {
 
     /**
-     * Calculates the span for each day.
-     * @param prices Array of stock prices.
-     * @return Array of spans.
+     * Calculates the span for each day based on stock prices.
      */
-    public static int[] calculateSpan(int[] prices) {
-        int n = prices.length;
-        int[] span = new int[n];
-        Stack<Integer> stack = new Stack<>();
+    public static int[] findStockSpans(int[] prices) {
+        int numberOfDays = prices.length;
+        int[] spans = new int[numberOfDays];
+        
+        // Stack stores indices of days. 
+        // Logic: A day's index is kept in the stack if it has a higher price than today's.
+        Stack<Integer> indexStack = new Stack<>();
 
-        for (int i = 0; i < n; i++) {
-            // Pop elements from stack while they are less than or equal to prices[i]
-            while (!stack.isEmpty() && prices[stack.peek()] <= prices[i]) {
-                stack.pop();
+        for (int today = 0; today < numberOfDays; today++) {
+            
+            // Loop Step 1: Pop indices from the stack while today's price is 
+            // higher than the price at the indices stored in the stack.
+            while (!indexStack.isEmpty() && prices[indexStack.peek()] <= prices[today]) {
+                indexStack.pop();
             }
 
-            // If stack is empty, it means prices[i] is the maximum so far
-            if (stack.isEmpty()) {
-                span[i] = i + 1;
+            // Loop Step 2: If the stack is empty, it means today's price is the highest so far.
+            // The span will be (today's index + 1).
+            if (indexStack.isEmpty()) {
+                spans[today] = today + 1;
             } else {
-                // Span is the difference between current index and the index of the 
-                // nearest greater element to the left.
-                span[i] = i - stack.peek();
+                // Otherwise, the span is the distance from today to the previous higher price index.
+                int previousHighIndex = indexStack.peek();
+                spans[today] = today - previousHighIndex;
             }
 
-            // Push current index to stack
-            stack.push(i);
+            // Loop Step 3: Push today's index into the stack
+            indexStack.push(today);
         }
 
-        return span;
+        return spans;
     }
 
     public static void main(String[] args) {
-        int[] prices = {100, 80, 60, 70, 60, 75, 85};
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("--- Stock Span Problem Solver ---");
+        System.out.print("Enter the number of days: ");
+        int totalDays = scanner.nextInt();
+
+        int[] prices = new int[totalDays];
+        for (int i = 0; i < totalDays; i++) {
+            System.out.print("Enter stock price for Day " + (i + 1) + ": ");
+            prices[i] = scanner.nextInt();
+        }
+
+        System.out.println("\nPrices input: " + Arrays.toString(prices));
+
+        // Calculate spans
+        int[] spans = findStockSpans(prices);
+
+        System.out.println("Spans output: " + Arrays.toString(spans));
         
-        System.out.println("Stock Prices: " + Arrays.toString(prices));
+        System.out.println("\nExplanation of first result:");
+        if (totalDays > 0) {
+            System.out.println("The span for the first day is always 1.");
+        }
         
-        int[] spans = calculateSpan(prices);
-        
-        System.out.println("Stock Spans:  " + Arrays.toString(spans));
-        
-        // Expected Output: [1, 1, 1, 2, 1, 4, 6]
-        // 100: 1
-        // 80: 1
-        // 60: 1
-        // 70: index 3 (70) > index 2 (60). 3 - 1 (index of 80) = 2.
-        // 60: 1
-        // 75: 75 > 60, 75 > 70, 75 > 60. Index 5 - 1 (index of 80) = 4.
-        // 85: 85 > 75, 85 > 80. Index 6 - 0 (index of 100) = 6.
+        scanner.close();
     }
 }

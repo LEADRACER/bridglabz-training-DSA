@@ -1,83 +1,86 @@
+import java.util.Scanner;
+
 /**
- * Circular Tour Problem (Gas Station Problem).
+ * Problem: Circular Tour (Gas Station Problem).
+ *
+ * Student Level Explanation:
+ * You have multiple petrol pumps in a circle. Each pump gives some petrol,
+ * and there is a distance to the next pump. You want to find a starting pump
+ * where you can complete a full circle without running out of petrol.
  * 
- * Problem: Given a set of petrol pumps with (petrol amount, distance to next pump),
- * find the starting pump index to complete a circular tour.
- * 
- * Logic:
- * - If total petrol < total distance, no solution exists.
- * - We maintain a 'surplus' of petrol. If it becomes negative at any point,
- *   it means the starting pump must be after the current pump.
- * 
- * Time Complexity: O(n)
- * Space Complexity: O(1)
+ * Instead of checking every possible starting pump (O(n^2)), we use a smart logic:
+ * If we start at pump A and fail at pump B, we don't need to try any pump between A and B.
+ * We can jump straight to B+1!
  */
 public class code5 {
 
+    // Helper class to store pump data
     static class PetrolPump {
         int petrol;
-        int distance;
+        int distanceToNext;
 
         public PetrolPump(int petrol, int distance) {
             this.petrol = petrol;
-            this.distance = distance;
+            this.distanceToNext = distance;
         }
     }
 
     /**
-     * Finds the starting point for a circular tour.
-     * @param pumps Array of PetrolPump objects.
-     * @return Index of the starting pump, or -1 if no tour is possible.
+     * Determines the starting index to complete a circular tour.
      */
-    public static int findStartingPoint(PetrolPump[] pumps) {
+    public static int findStart(PetrolPump[] pumps) {
         int n = pumps.length;
-        int start = 0;
-        int surplus = 0;
-        int deficit = 0;
+        int currentSurplus = 0; // Petrol currently in my tank
+        int totalDeficit = 0;   // Petrol I was short by in earlier attempts
+        int startIndex = 0;     // Current candidate starting point
 
         for (int i = 0; i < n; i++) {
-            surplus += pumps[i].petrol - pumps[i].distance;
-            
-            // If current surplus is negative, we can't start from any pump
-            // between the current start and index i.
-            if (surplus < 0) {
-                deficit += surplus;
-                surplus = 0;
-                start = i + 1;
+            currentSurplus += (pumps[i].petrol - pumps[i].distanceToNext);
+
+            // If my tank goes below 0, I cannot reach the next pump
+            if (currentSurplus < 0) {
+                // Keep track of the deficit so I can check if tour is possible at the end
+                totalDeficit += currentSurplus;
+                // Reset my tank and try starting from the next pump
+                currentSurplus = 0;
+                startIndex = i + 1;
             }
         }
 
-        // Check if total petrol is sufficient for total distance
-        return (surplus + deficit >= 0) ? start : -1;
+        // Final sanity check: If total petrol (surplus + deficit) is positive, 
+        // it means we have enough gas to cover the whole distance.
+        if (currentSurplus + totalDeficit >= 0) {
+            return startIndex;
+        } else {
+            return -1; // Not possible to complete a circle
+        }
     }
 
     public static void main(String[] args) {
-        // Petrol, Distance
-        PetrolPump[] pumps = {
-            new PetrolPump(4, 6),
-            new PetrolPump(6, 5),
-            new PetrolPump(7, 3),
-            new PetrolPump(4, 5)
-        };
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Petrol Pumps (Petrol, Distance):");
-        for (int i = 0; i < pumps.length; i++) {
-            System.out.printf("Pump %d: (%d, %d)\n", i, pumps[i].petrol, pumps[i].distance);
+        System.out.println("--- Circular Tour Solver ---");
+        System.out.print("How many petrol pumps are there? ");
+        int totalPumps = scanner.nextInt();
+
+        PetrolPump[] pumps = new PetrolPump[totalPumps];
+        for (int i = 0; i < totalPumps; i++) {
+            System.out.println("\nPump " + i + ":");
+            System.out.print("  Petrol available: ");
+            int p = scanner.nextInt();
+            System.out.print("  Distance to next pump: ");
+            int d = scanner.nextInt();
+            pumps[i] = new PetrolPump(p, d);
         }
 
-        int start = findStartingPoint(pumps);
+        int result = findStart(pumps);
 
-        if (start == -1) {
-            System.out.println("\nNo circular tour possible.");
+        if (result == -1) {
+            System.out.println("\nResult: No circular tour is possible from any pump.");
         } else {
-            System.out.println("\nStarting point for circular tour: Pump " + start);
+            System.out.println("\nResult: You should start at Pump Index " + result);
         }
-        
-        // Logic Trace:
-        // Pump 0: 4-6 = -2. surplus=-2. deficit=-2, surplus=0, start=1
-        // Pump 1: 6-5 = 1. surplus=1.
-        // Pump 2: 7-3 = 4. surplus=5.
-        // Pump 3: 4-5 = -1. surplus=4.
-        // Final check: surplus(4) + deficit(-2) = 2. 2 >= 0. Return start 1.
+
+        scanner.close();
     }
 }

@@ -1,79 +1,78 @@
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Longest Consecutive Sequence.
- * 
- * Problem: Given an unsorted array, find the length of the longest consecutive
- * elements sequence.
+ * Problem: Longest Consecutive Sequence.
+ *
+ * Student Level Explanation:
+ * Given an unsorted array, we want to find the length of the longest 
+ * sequence of numbers like 1, 2, 3, 4.
  * 
  * Logic:
- * - Insert all numbers into a HashSet for O(1) lookup.
- * - Iterate through the set. For each number 'x', check if (x-1) exists.
- * - If (x-1) does NOT exist, 'x' is the potential start of a sequence.
- * - Incrementally check for (x+1), (x+2), ... while they exist in the set.
- * - Track the maximum length found.
- * 
- * Time Complexity: O(n) - Each number is visited a constant number of times.
- * Space Complexity: O(n) - To store the numbers in the HashSet.
+ * We use a HashSet to store all numbers. 
+ * How do we know if a number 'X' is the START of a sequence?
+ * Simple: If 'X - 1' is NOT in the set, then 'X' must be a starting point.
+ * From there, we just keep checking if X+1, X+2, X+3... are present.
  */
 public class code3 {
 
     /**
-     * Finds the length of the longest consecutive sequence.
-     * @param nums Unsorted input array.
-     * @return Length of the longest consecutive sequence.
+     * Logic to find the length of the longest consecutive elements sequence.
      */
-    public static int longestConsecutive(int[] nums) {
-        if (nums == null || nums.length == 0) {
+    public static int getLongestSequenceLength(int[] numbers) {
+        if (numbers == null || numbers.length == 0) {
             return 0;
         }
 
-        // 1. Store all unique numbers in a set
-        Set<Integer> numSet = new HashSet<>();
-        for (int num : nums) {
-            numSet.add(num);
+        // Step 1: Put all numbers into a HashSet for fast lookup
+        Set<Integer> uniqueNumbers = new HashSet<>();
+        for (int val : numbers) {
+            uniqueNumbers.add(val);
         }
 
-        int longestStreak = 0;
+        int maxStreakLength = 0;
 
-        // 2. Iterate through the set
-        for (int num : numSet) {
-            // Check if 'num' is the start of a sequence
-            // We only start counting if 'num-1' is not present
-            if (!numSet.contains(num - 1)) {
-                int currentNum = num;
+        // Step 2: Iterate through each number to identify potential starts
+        for (int currentNum : uniqueNumbers) {
+            
+            // Step 3: Check if currentNum is the START of a sequence
+            // (Only start if currentNum-1 is NOT present)
+            if (!uniqueNumbers.contains(currentNum - 1)) {
+                
+                int startingPoint = currentNum;
                 int currentStreak = 1;
 
-                // Look for consecutive elements
-                while (numSet.contains(currentNum + 1)) {
-                    currentNum += 1;
+                // Step 4: Count how many consecutive numbers exist after the start
+                while (uniqueNumbers.contains(startingPoint + 1)) {
+                    startingPoint += 1;
                     currentStreak += 1;
                 }
 
-                longestStreak = Math.max(longestStreak, currentStreak);
+                // Step 5: Update the maximum streak found so far
+                if (currentStreak > maxStreakLength) {
+                    maxStreakLength = currentStreak;
+                }
             }
         }
 
-        return longestStreak;
+        return maxStreakLength;
     }
 
     public static void main(String[] args) {
-        int[] nums = {100, 4, 200, 1, 3, 2};
-        
-        System.out.println("Input Array: " + Arrays.toString(nums));
-        
-        int length = longestConsecutive(nums);
-        
-        System.out.println("Length of longest consecutive sequence: " + length);
-        
-        // Expected Logic:
-        // [1, 2, 3, 4] forms a sequence. Length = 4.
-        
-        int[] nums2 = {0, 3, 7, 2, 5, 8, 4, 6, 0, 1};
-        System.out.println("\nInput Array 2: " + Arrays.toString(nums2));
-        System.out.println("Length of longest consecutive sequence: " + longestConsecutive(nums2));
-        // [0, 1, 2, 3, 4, 5, 6, 7, 8] forms a sequence. Length = 9.
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("--- Longest Consecutive Sequence Finder ---");
+        System.out.print("Enter the number of elements: ");
+        int n = scanner.nextInt();
+
+        int[] data = new int[n];
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter element " + (i + 1) + ": ");
+            data[i] = scanner.nextInt();
+        }
+
+        int maxLength = getLongestSequenceLength(data);
+        System.out.println("\nThe length of the longest consecutive sequence is: " + maxLength);
+
+        scanner.close();
     }
 }

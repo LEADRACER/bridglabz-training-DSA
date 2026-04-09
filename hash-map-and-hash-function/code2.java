@@ -1,56 +1,65 @@
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Check for a Pair with Given Sum in an Array (Two Sum Problem).
- * 
- * Problem: Given an array and a target sum, find if there exists a pair of elements
- * whose sum is equal to the target.
+ * Problem: Check for a Pair with a Given Sum.
+ *
+ * Student Level Explanation:
+ * Given a list of numbers and a target total, we want to see if any two numbers 
+ * in the list add up to that total.
  * 
  * Logic:
- * - Use a HashSet to store visited numbers.
- * - For each number 'x', check if (target - x) is already in the set.
- * - This achieves linear time complexity.
- * 
- * Time Complexity: O(n)
- * Space Complexity: O(n)
+ * Instead of checking every possible pair (which is slow), we use a 'HashSet' 
+ * to remember which numbers we have already seen.
+ * For every number 'X' we look at, we calculate 'Target - X'. 
+ * If that 'Complement' is already in our set, then we found a pair!
  */
 public class code2 {
 
     /**
-     * Checks if a pair exists with the given target sum.
-     * @param arr The input array.
-     * @param target The target sum.
-     * @return int[] array containing the pair, or null if not found.
+     * Logic to find if a pair exists that adds up to the target.
      */
-    public static int[] findPair(int[] arr, int target) {
-        Set<Integer> visited = new HashSet<>();
+    public static void findAndPrintPair(int[] numbers, int targetSum) {
+        // HashSet to store numbers we have already visited
+        Set<Integer> visitedNumbers = new HashSet<>();
+        boolean found = false;
 
-        for (int num : arr) {
-            int complement = target - num;
-            if (visited.contains(complement)) {
-                return new int[]{complement, num};
+        for (int currentElement : numbers) {
+            int neededComplement = targetSum - currentElement;
+
+            // Step 1: Check if the number we need is in our 'visited' memory
+            if (visitedNumbers.contains(neededComplement)) {
+                System.out.println("Result: Pair found! " + neededComplement + " + " + currentElement + " = " + targetSum);
+                found = true;
+                break; // Stop after finding the first pair
             }
-            visited.add(num);
+
+            // Step 2: If not found, add the current number to 'visited' memory and move to next
+            visitedNumbers.add(currentElement);
         }
 
-        return null; // No pair found
+        if (!found) {
+            System.out.println("Result: No pair found in the array adds up to " + targetSum);
+        }
     }
 
     public static void main(String[] args) {
-        int[] arr = {1, 4, 45, 6, 10, 8};
-        int target = 16;
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Array: " + Arrays.toString(arr));
-        System.out.println("Target Sum: " + target);
+        System.out.println("--- Pair Sum Finder ---");
+        System.out.print("How many numbers are in your array? ");
+        int totalElements = scanner.nextInt();
 
-        int[] pair = findPair(arr, target);
-
-        if (pair != null) {
-            System.out.println("Pair found: " + pair[0] + " + " + pair[1] + " = " + target);
-        } else {
-            System.out.println("No pair with the given sum exists.");
+        int[] data = new int[totalElements];
+        for (int i = 0; i < totalElements; i++) {
+            System.out.print("Enter number " + (i + 1) + ": ");
+            data[i] = scanner.nextInt();
         }
+
+        System.out.print("What is your target sum? ");
+        int target = scanner.nextInt();
+
+        findAndPrintPair(data, target);
+
+        scanner.close();
     }
 }

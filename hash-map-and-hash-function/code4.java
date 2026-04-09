@@ -1,155 +1,167 @@
 import java.util.LinkedList;
+import java.util.Scanner;
 
 /**
- * Custom Hash Map Implementation using Separate Chaining.
+ * Problem: Design and Implement a Custom Hash Map.
+ *
+ * Student Level Explanation:
+ * A Hash Map stores data in Key-Value pairs. 
+ * Imagine a row of 'Buckets'. We use a 'Hash Function' to decide which bucket a key belongs to.
  * 
  * Logic:
- * - Use an array of buckets (Linked Lists).
- * - Use key.hashCode() and modulo operator to find the bucket index.
- * - Handle collisions by appending to the linked list at the bucket index.
- * 
- * Operations:
- * - put(K key, V value): Adds or updates a pair.
- * - get(K key): Retrieves value for a key.
- * - remove(K key): Deletes a key-value pair.
- * - size(): Returns number of elements.
+ * 1. Bucket Array: An array where each slot (bucket) is a Linked List.
+ * 2. Hash Function: key.hashCode() % number_of_buckets.
+ * 3. Separate Chaining: If two keys end up in the same bucket, we just append them to 
+ *    the Linked List in that bucket.
  */
-class MyMapNode<K, V> {
-    K key;
-    V value;
-
-    public MyMapNode(K key, V value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return "{" + key + " = " + value + "}";
-    }
-}
-
 public class code4<K, V> {
-    private int numBuckets;
-    private LinkedList<MyMapNode<K, V>>[] buckets;
-    private int size;
+
+    // Helper class to store the actual data node
+    static class MapNode<K, V> {
+        K key;
+        V value;
+        MapNode(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+        public String toString() {
+            return "[" + key + " : " + value + "]";
+        }
+    }
+
+    private int numberOfBuckets;
+    private LinkedList<MapNode<K, V>>[] bucketList;
+    private int elementCount;
 
     @SuppressWarnings("unchecked")
     public code4() {
-        this.numBuckets = 10; // Initial capacity
-        this.buckets = new LinkedList[numBuckets];
-        for (int i = 0; i < numBuckets; i++) {
-            buckets[i] = new LinkedList<>();
+        this.numberOfBuckets = 5; // Start small for easier tracing
+        this.bucketList = new LinkedList[numberOfBuckets];
+        for (int i = 0; i < numberOfBuckets; i++) {
+            bucketList[i] = new LinkedList<>();
         }
-        this.size = 0;
+        this.elementCount = 0;
     }
 
     /**
-     * Internal hash function.
+     * Map Step 1: Find which bucket a key belongs to.
      */
-    private int getBucketIndex(K key) {
-        int hashCode = (key == null) ? 0 : Math.abs(key.hashCode());
-        return hashCode % numBuckets;
+    private int findBucketIndex(K key) {
+        if (key == null) return 0;
+        // Use Math.abs because hashCode can be negative
+        int hashCode = Math.abs(key.hashCode());
+        return hashCode % numberOfBuckets;
     }
 
     /**
-     * Insertion / Update.
+     * Map Step 2: Store a key-value pair.
      */
     public void put(K key, V value) {
-        int index = getBucketIndex(key);
-        LinkedList<MyMapNode<K, V>> list = buckets[index];
+        int bucketIndex = findBucketIndex(key);
+        LinkedList<MapNode<K, V>> currentBucket = bucketList[bucketIndex];
 
-        for (MyMapNode<K, V> node : list) {
-            if (node.key == null && key == null || node.key != null && node.key.equals(key)) {
-                node.value = value; // Update existing
+        // Check if the key already exists to update its value
+        for (MapNode<K, V> node : currentBucket) {
+            if (node.key.equals(key)) {
+                node.value = value;
                 return;
             }
         }
 
-        list.add(new MyMapNode<>(key, value));
-        size++;
+        // If not found, add a new node
+        currentBucket.add(new MapNode<>(key, value));
+        elementCount++;
     }
 
     /**
-     * Retrieval.
+     * Map Step 3: Retrieve a value using a key.
      */
     public V get(K key) {
-        int index = getBucketIndex(key);
-        LinkedList<MyMapNode<K, V>> list = buckets[index];
+        int bucketIndex = findBucketIndex(key);
+        LinkedList<MapNode<K, V>> currentBucket = bucketList[bucketIndex];
 
-        for (MyMapNode<K, V> node : list) {
-            if (node.key == null && key == null || node.key != null && node.key.equals(key)) {
+        for (MapNode<K, V> node : currentBucket) {
+            if (node.key.equals(key)) {
                 return node.value;
             }
         }
-        return null;
+        return null; // Key not found
     }
 
     /**
-     * Deletion.
+     * Map Step 4: Remove a key from the map.
      */
-    public V remove(K key) {
-        int index = getBucketIndex(key);
-        LinkedList<MyMapNode<K, V>> list = buckets[index];
+    public void remove(K key) {
+        int bucketIndex = findBucketIndex(key);
+        LinkedList<MapNode<K, V>> currentBucket = bucketList[bucketIndex];
 
-        MyMapNode<K, V> target = null;
-        for (MyMapNode<K, V> node : list) {
-            if (node.key == null && key == null || node.key != null && node.key.equals(key)) {
-                target = node;
+        MapNode<K, V> toRemove = null;
+        for (MapNode<K, V> node : currentBucket) {
+            if (node.key.equals(key)) {
+                toRemove = node;
                 break;
             }
         }
 
-        if (target != null) {
-            list.remove(target);
-            size--;
-            return target.value;
+        if (toRemove != null) {
+            currentBucket.remove(toRemove);
+            elementCount--;
         }
-        return null;
     }
 
     public int size() {
-        return size;
+        return elementCount;
     }
 
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ ");
-        for (LinkedList<MyMapNode<K, V>> list : buckets) {
-            for (MyMapNode<K, V> node : list) {
-                sb.append(node).append(" ");
-            }
+    public void display() {
+        System.out.println("\n--- Current Internal State of Hash Map ---");
+        for (int i = 0; i < numberOfBuckets; i++) {
+            System.out.print("Bucket " + i + ": " + bucketList[i]);
+            System.out.println();
         }
-        sb.append("]");
-        return sb.toString();
     }
 
     public static void main(String[] args) {
-        code4<String, Integer> map = new code4<>();
+        Scanner scanner = new Scanner(System.in);
+        code4<String, String> studentMap = new code4<>();
 
-        System.out.println("Adding keys: Apple, Banana, Cherry");
-        map.put("Apple", 10);
-        map.put("Banana", 20);
-        map.put("Cherry", 30);
-
-        System.out.println("Map: " + map);
-        System.out.println("Size: " + map.size());
-
-        System.out.println("\nRetrieving 'Banana': " + map.get("Banana"));
-        System.out.println("Updating 'Apple' to 15...");
-        map.put("Apple", 15);
-        System.out.println("New Apple value: " + map.get("Apple"));
-
-        System.out.println("\nRemoving 'Banana'...");
-        map.remove("Banana");
-        System.out.println("Map after removal: " + map);
-        System.out.println("Size: " + map.size());
+        System.out.println("--- Custom Hash Map Interactive Demo ---");
         
-        System.out.println("\nIs 'Banana' still there? " + (map.get("Banana") != null));
+        while (true) {
+            System.out.println("\nOptions: 1. Put Item  2. Get Item  3. Remove Item  4. Display Map  5. Exit");
+            System.out.print("Select an option (1-5): ");
+            int option = scanner.nextInt();
+
+            if (option == 5) break;
+
+            switch (option) {
+                case 1:
+                    System.out.print("Enter Key (e.g., Name): ");
+                    String k = scanner.next();
+                    System.out.print("Enter Value (e.g., Phone): ");
+                    String v = scanner.next();
+                    studentMap.put(k, v);
+                    break;
+                case 2:
+                    System.out.print("Enter Key to find: ");
+                    String keyToFind = scanner.next();
+                    System.out.println("Value found: " + studentMap.get(keyToFind));
+                    break;
+                case 3:
+                    System.out.print("Enter Key to remove: ");
+                    String keyToRem = scanner.next();
+                    studentMap.remove(keyToRem);
+                    System.out.println("Item removed if it existed.");
+                    break;
+                case 4:
+                    studentMap.display();
+                    break;
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+        
+        System.out.println("Exiting demo...");
+        scanner.close();
     }
 }
